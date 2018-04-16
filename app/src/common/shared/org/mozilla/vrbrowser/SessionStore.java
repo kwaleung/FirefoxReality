@@ -172,18 +172,30 @@ public class SessionStore implements GeckoSession.NavigationDelegate, GeckoSessi
         mSessionChangeListeners.remove(aListener);
     }
 
+    public static class SessionSettings {
+        public boolean multiprocess = false;
+        public boolean privateMode = false;
+        public boolean trackingProtection = false;
+    }
+
     public int createSession() {
+        return createSession(new SessionSettings());
+    }
+    public int createSession(SessionSettings aSettings) {
         State state = new State();
         state.mSession = new GeckoSession();
         state.mSession.getTextInput().setShowSoftInputOnFocus(mShowSoftInputOnFocus);
 
         int result = state.mSession.hashCode();
         mSessions.put(result, state);
-        state.mSession.getSettings().setBoolean(GeckoSessionSettings.USE_MULTIPROCESS, false);
-        state.mSession.enableTrackingProtection(GeckoSession.TrackingProtectionDelegate.CATEGORY_AD |
-                GeckoSession.TrackingProtectionDelegate.CATEGORY_ANALYTIC |
-                GeckoSession.TrackingProtectionDelegate.CATEGORY_SOCIAL |
-                GeckoSession.TrackingProtectionDelegate.CATEGORY_CONTENT);
+        state.mSession.getSettings().setBoolean(GeckoSessionSettings.USE_MULTIPROCESS, aSettings.multiprocess);
+        state.mSession.getSettings().setBoolean(GeckoSessionSettings.USE_PRIVATE_MODE, aSettings.privateMode);
+        if (aSettings.trackingProtection) {
+            state.mSession.enableTrackingProtection(GeckoSession.TrackingProtectionDelegate.CATEGORY_AD |
+                    GeckoSession.TrackingProtectionDelegate.CATEGORY_ANALYTIC |
+                    GeckoSession.TrackingProtectionDelegate.CATEGORY_SOCIAL |
+                    GeckoSession.TrackingProtectionDelegate.CATEGORY_CONTENT);
+        }
         state.mSession.setNavigationDelegate(this);
         state.mSession.setProgressDelegate(this);
         state.mSession.setContentDelegate(this);

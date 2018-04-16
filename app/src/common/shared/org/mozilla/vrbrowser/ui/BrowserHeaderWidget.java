@@ -12,6 +12,7 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
 import org.mozilla.geckoview.GeckoSession;
+import org.mozilla.geckoview.GeckoSessionSettings;
 import org.mozilla.vrbrowser.R;
 import org.mozilla.vrbrowser.SessionStore;
 import org.mozilla.vrbrowser.Widget;
@@ -174,6 +175,10 @@ public class BrowserHeaderWidget extends UIWidget
                 closeTab(aTab);
             }
         });
+        GeckoSession session = SessionStore.get().getSession(aSessionId);
+        if (session != null) {
+            tabView.setIsPrivate(session.getSettings().getBoolean(GeckoSessionSettings.USE_PRIVATE_MODE));
+        }
         tab.setCustomView(tabView);
         mTabContainer.addTab(tab, aSelected);
         return tab;
@@ -308,6 +313,9 @@ public class BrowserHeaderWidget extends UIWidget
             mTabContainer.scrollToTab(tab, false);
             tab.select();
         }
+
+        boolean isPrivate = aSession.getSettings().getBoolean(GeckoSessionSettings.USE_PRIVATE_MODE);
+        mNavigationBar.setIsPrivate(isPrivate);
     }
 
 
