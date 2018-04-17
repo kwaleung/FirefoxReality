@@ -63,7 +63,7 @@ public class MoreMenuWidget extends UIWidget {
         });
 
         final ArrayList<MenuItem> items = new ArrayList<>();
-        items.add(new MenuItem(R.string.menu_add_private_tab, R.drawable.ic_icon_focus_mode, new Runnable() {
+        items.add(new MenuItem(R.string.menu_add_private_tab, R.drawable.ic_icon_menu_private_browsing, new Runnable() {
             @Override
             public void run() {
                 if (mDelegate != null) {
