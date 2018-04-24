@@ -351,7 +351,7 @@ public class BrowserHeaderWidget extends UIWidget
         return null;
     }
 
-    private void togglePrivateBrowsing() {
+    public void togglePrivateBrowsing() {
         mIsPrivateBrowsing = !mIsPrivateBrowsing;
         boolean prevAnimateTabs = mAnimateTabs;
         mAnimateTabs = false;

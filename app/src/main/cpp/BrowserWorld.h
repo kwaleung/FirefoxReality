@@ -46,6 +46,7 @@ protected:
   ~BrowserWorld();
   void CreateFloor();
   void CreateControllerPointer();
+  void CreateTray();
 private:
   State& m;
   BrowserWorld() = delete;

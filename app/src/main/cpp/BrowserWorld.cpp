@@ -5,6 +5,7 @@
 
 #include "BrowserWorld.h"
 #include "ControllerDelegate.h"
+#include "Tray.h"
 #include "Widget.h"
 #include "WidgetPlacement.h"
 #include "vrb/CameraSimple.h"
@@ -59,6 +60,8 @@ static const char* kHandleAudioPoseName = "handleAudioPose";
 static const char* kHandleAudioPoseSignature = "(FFFFFFF)V";
 static const char* kHandleGestureName = "handleGesture";
 static const char* kHandleGestureSignature = "(I)V";
+static const char* kHandleTrayEventName = "handleTrayEvent";
+static const char* kHandleTrayEventSignature = "(I)V";
 static const char* kTileTexture = "tile.png";
 class SurfaceObserver;
 typedef std::shared_ptr<SurfaceObserver> SurfaceObserverPtr;
@@ -356,6 +359,7 @@ struct BrowserWorld::State {
   DrawableListPtr drawList;
   CameraPtr leftCamera;
   CameraPtr rightCamera;
+  TrayPtr tray;
   float nearClip;
   float farClip;
   JNIEnv* env;
@@ -366,6 +370,7 @@ struct BrowserWorld::State {
   jmethodID handleScrollEventMethod;
   jmethodID handleAudioPoseMethod;
   jmethodID handleGestureMethod;
+  jmethodID handleTrayEventMethod;
   GestureDelegateConstPtr gestures;
   bool windowsInitialized;
 
@@ -374,6 +379,7 @@ struct BrowserWorld::State {
             dispatchCreateWidgetMethod(nullptr), handleMotionEventMethod(nullptr),
             handleScrollEventMethod(nullptr), handleAudioPoseMethod(nullptr),
             handleGestureMethod(nullptr),
+            handleTrayEventMethod(nullptr),
             windowsInitialized(false) {
     context = Context::Create();
     contextWeak = context;
@@ -440,6 +446,29 @@ BrowserWorld::State::UpdateControllers() {
         }
       }
     }
+
+    if (tray) {
+      vrb::Vector result;
+      float distance = 0.0f;
+      bool isInside = false;
+      bool trayActive = false;
+      if (tray->TestControllerIntersection(start, direction, result, isInside, distance)) {
+        if (isInside && (distance < hitDistance)) {
+          hitWidget.reset();
+          hitDistance = distance;
+          hitPoint = result;
+          trayActive = true;
+        }
+      }
+      int32_t trayEvent = tray->ProcessEvents(trayActive, controller.pressed);
+      if (trayEvent == Tray::IconHide) {
+        tray->Toggle(false);
+      }
+      if (trayEvent >= 0 && handleTrayEventMethod) {
+        env->CallVoidMethod(activity, handleTrayEventMethod, trayEvent);
+      }
+    }
+
     if (handleMotionEventMethod && hitWidget) {
       active.push_back(hitWidget.get());
       float theX = 0.0f, theY = 0.0f;
@@ -623,6 +652,12 @@ BrowserWorld::InitializeJava(JNIEnv* aEnv, jobject& aActivity, jobject& aAssetMa
     VRB_LOG("Failed to find Java method: %s %s", kHandleGestureName, kHandleGestureSignature);
   }
 
+  m.handleTrayEventMethod = m.env->GetMethodID(clazz, kHandleTrayEventName, kHandleTrayEventSignature);
+
+  if (!m.handleTrayEventMethod) {
+     VRB_LOG("Failed to find Java method: %s %s", kHandleTrayEventName, kHandleTrayEventSignature);
+  }
+
   jmethodID getDisplayDensityMethod =  m.env->GetMethodID(clazz, kGetDisplayDensityName, kGetDisplayDensitySignature);
   if (getDisplayDensityMethod) {
     m.displayDensity = m.env->CallFloatMethod(m.activity, getDisplayDensityMethod);
@@ -643,6 +678,7 @@ BrowserWorld::InitializeJava(JNIEnv* aEnv, jobject& aActivity, jobject& aAssetMa
     m.root->AddNode(m.controllers->root);
     CreateControllerPointer();
     CreateFloor();
+    CreateTray();
     m.controllers->modelsLoaded = true;
   }
 }
@@ -682,6 +718,7 @@ BrowserWorld::ShutdownJava() {
   m.handleScrollEventMethod = nullptr;
   m.handleAudioPoseMethod = nullptr;
   m.handleGestureMethod = nullptr;
+  m.handleTrayEventMethod = nullptr;
   m.env = nullptr;
 }
 
@@ -874,6 +911,17 @@ BrowserWorld::CreateFloor() {
   geometry->AddFace(index, index, normalIndex);
 
   m.root->AddNode(geometry);
+}
+
+void
+BrowserWorld::CreateTray() {
+  m.tray = Tray::Create(m.contextWeak);
+  m.tray->Load(m.factory, m.parser);
+  m.root->AddNode(m.tray->GetRoot());
+
+  vrb::Matrix transform = vrb::Matrix::Rotation(vrb::Vector(1.0f, 0.0f, 0.0f), 30.0f * M_PI/180.0f);
+  transform.TranslateInPlace(Vector(0.0f, 0.45f, -1.2f));
+  m.tray->SetTransform(transform);
 }
 
 void

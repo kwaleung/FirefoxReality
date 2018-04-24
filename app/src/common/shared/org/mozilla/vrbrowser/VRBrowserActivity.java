@@ -51,6 +51,14 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
     static final int GestureSwipeRight = 1;
     static final int SwipeDelay = 1000; // milliseconds
 
+    static final int TrayEventHelp = 0;
+    static final int TrayEventSettings = 1;
+    static final int TrayEventPrivate = 2;
+    static final int TrayEventNew = 3;
+    static final int TrayEventNotification = 4;
+    static final int TrayEventHide = 5;
+    static final int TrayEventExit = 6;
+
     static final String LOGTAG = "VRB";
     HashMap<Integer, Widget> mWidgets;
     SparseArray<WidgetAddCallback> mWidgetAddCallbacks;
@@ -280,6 +288,36 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
                     mLastRunnable = new SwipeRunnable();
                     mHandler.postDelayed(mLastRunnable, SwipeDelay);
                 }
+            }
+        });
+    }
+
+    @Keep
+    void handleTrayEvent(final int aType) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+            if (aType == TrayEventNew) {
+                int id = SessionStore.get().createSession();
+                SessionStore.get().setCurrentSession(id);
+                SessionStore.get().loadUri(SessionStore.DEFAULT_URL);
+            } else if (aType == TrayEventPrivate) {
+                // FIXME: Find a better way to get the widget or move some logic to the SessionStore
+                for (Widget widget: mWidgets.values()) {
+                    if (widget instanceof BrowserHeaderWidget) {
+                        BrowserHeaderWidget header = (BrowserHeaderWidget) widget;
+                        header.togglePrivateBrowsing();
+                        break;
+                    }
+                }
+            } else if (aType == TrayEventHide) {
+                // No op, event handled in native code.
+            }
+            else {
+                Log.i(LOGTAG, "Tray event not implemented: " + aType);
+            }
+
+            mAudioEngine.playSound(AudioEngine.Sound.CLICK);
             }
         });
     }
