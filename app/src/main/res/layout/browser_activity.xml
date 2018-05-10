@@ -14,6 +14,10 @@
             android:id="@+id/browserHeader"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
+        <org.mozilla.vrbrowser.ui.KeyboardWidget
+            android:id="@+id/keyboardView"
+            android:layout_width="@dimen/keyboard_width"
+            android:layout_height="@dimen/keyboard_height" />
         <org.mozilla.geckoview.GeckoView
             android:id="@+id/geckoview"
             android:layout_width="match_parent"
