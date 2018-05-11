@@ -58,11 +58,11 @@ public class NavigationURLBar extends FrameLayout {
         mURL.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView aTextView, int actionId, KeyEvent event) {
-                if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    handleURLEdit(aTextView.getText().toString());
-                    return true;
-                }
-                return false;
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                handleURLEdit(aTextView.getText().toString());
+                return true;
+            }
+            return false;
             }
         });
         mMicrophoneButton = findViewById(R.id.microphoneButton);
@@ -89,6 +89,7 @@ public class NavigationURLBar extends FrameLayout {
         if (aURL != null) {
             index = aURL.indexOf("://");
         }
+        mURL.setText(aURL);
         if (index > 0) {
             SpannableString spannable = new SpannableString(aURL);
             ForegroundColorSpan color1 = new ForegroundColorSpan(mURLProtocolColor);

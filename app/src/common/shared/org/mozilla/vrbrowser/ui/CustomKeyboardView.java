@@ -267,6 +267,8 @@ public class CustomKeyboardView extends View implements View.OnClickListener {
     // Fork
     private Drawable mFeaturedKeyBackground;
     private HashSet<Integer> mFeaturedKeyCodes = new HashSet<Integer>();
+    private int mSelectedForegroundColor;
+    private int mForegroundColor;
 
     Handler mHandler;
 
@@ -292,7 +294,7 @@ public class CustomKeyboardView extends View implements View.OnClickListener {
         previewLayout = 0;
         mPreviewOffset = 0;
         mPreviewHeight = 80;
-        mKeyTextSize = 38;
+        mKeyTextSize = 40;
         mKeyTextColor = 0xFFFFFFFF;
         mLabelTextSize = 34;
         mPopupLayout = 0;
@@ -324,6 +326,7 @@ public class CustomKeyboardView extends View implements View.OnClickListener {
         mPaint.setTextSize(keyTextSize);
         mPaint.setTextAlign(Align.CENTER);
         mPaint.setAlpha(255);
+        mPaint.setTypeface(Typeface.create("sans-serif",Typeface.NORMAL));
 
         mPadding = new Rect(0, 0, 0, 0);
         mMiniKeyboardCache = new HashMap<Key,View>();
@@ -335,6 +338,9 @@ public class CustomKeyboardView extends View implements View.OnClickListener {
         mAudioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
 
         resetMultiTap();
+
+        mForegroundColor = context.getColor(R.color.fog);
+        mSelectedForegroundColor = context.getColor(R.color.void_color);
     }
 
     @Override
@@ -715,6 +721,7 @@ public class CustomKeyboardView extends View implements View.OnClickListener {
                     paint.setTextSize(mKeyTextSize);
                     paint.setTypeface(Typeface.DEFAULT);
                 }
+                paint.setColor(key.pressed ? mSelectedForegroundColor : mForegroundColor);
                 // Draw a drop shadow for the text
                 paint.setShadowLayer(mShadowRadius, 0, 0, mShadowColor);
                 // Draw the text
@@ -732,6 +739,7 @@ public class CustomKeyboardView extends View implements View.OnClickListener {
                 final int drawableY = (key.height - padding.top - padding.bottom
                         - key.icon.getIntrinsicHeight()) / 2 + padding.top;
                 canvas.translate(drawableX, drawableY);
+                key.icon.setColorFilter(key.pressed ? mSelectedForegroundColor : mForegroundColor, PorterDuff.Mode.MULTIPLY);
                 key.icon.setBounds(0, 0,
                         key.icon.getIntrinsicWidth(), key.icon.getIntrinsicHeight());
                 key.icon.draw(canvas);

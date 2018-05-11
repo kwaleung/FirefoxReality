@@ -147,6 +147,12 @@ public class KeyboardWidget extends UIWidget implements CustomKeyboardView.OnKey
             case Keyboard.KEYCODE_DONE:
                 handleDone();
                 break;
+            case CustomKeyboard.KEYCODE_VOICE_INPUT:
+                // TODO
+                break;
+            case CustomKeyboard.KEYCODE_STRING_COM:
+                handleText(".com");
+                break;
             default:
                 handleKey(primaryCode, keyCodes);
                 break;
@@ -250,6 +256,19 @@ public class KeyboardWidget extends UIWidget implements CustomKeyboardView.OnKey
             @Override
             public void run() {
                 mInputConnection.commitText(str, 1);
+            }
+        });
+    }
+
+    private void handleText(final String aText) {
+        if (mFocusedView == null || mInputConnection == null) {
+            return;
+        }
+
+        postInputCommand(new Runnable() {
+            @Override
+            public void run() {
+                mInputConnection.commitText(aText, 1);
             }
         });
     }

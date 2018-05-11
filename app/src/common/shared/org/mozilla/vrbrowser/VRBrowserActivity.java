@@ -249,10 +249,10 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
         placement.parentAnchorY = 0.5f;
         placement.anchorX = 0.5f;
         placement.anchorY = 0.5f;
-        placement.translationZ = 650.0f;
+        placement.translationZ = 660.0f;
         placement.rotationAxisX = 1.0f;
         placement.rotation = (float)Math.toRadians(-15.0f);
-        placement.worldScale = 0.13f;
+        placement.worldScale = 0.11f;
 
         addWidget(placement, false, new WidgetAddCallback() {
             @Override
